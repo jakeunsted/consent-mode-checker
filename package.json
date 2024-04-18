@@ -1,0 +1,23 @@
+{
+  "name": "consent-mode-scalper",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "test",
+    "start": "node index.js"
+  },
+  "author": "Jake & Karyna",
+  "license": "ISC",
+  "dependencies": {
+    "@sparticuz/chromium": "^123.0.1",
+    "puppeteer": "^22.6.5",
+    "puppeteer-core": "^22.6.5",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
+  },
+  "engines": {
+    "npm": "9.8.1",
+    "node": "18.18.2"
+  }
+}
