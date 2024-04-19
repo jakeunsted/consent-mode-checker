@@ -67,24 +67,75 @@ function findConsentProvider (source) {
 }
 
 function filterPayloads (payloads) {
+  const gcsExplain = {
+    "G100": "No consent has been granted.",
+    "G110": "Google Ads has consent, Google Analytics does not.",
+    "G101": "Google Analytics has consent, Google Ads does not.",
+    "G111": "Both Google Ads and Google Analytics have consent.",
+    "G1--": "The site did not require consent for ad_storage or analytics_storage."
+  }
+  const gcdExplain = {
+    "l": "The signal has not been set with Consent Mode.",
+    "p": "Denied by default (no update).",
+    "q": "Denied both by default and after update.",
+    "t": "Granted by default (no update).",
+    "r": "Denied by default and granted after update.",
+    "m": "Denied after update (no default).",
+    "n": "Granted after update (no default).",
+    "u": "Granted by default and denied after update.",
+    "v": "Granted both by default and after update."
+  }
   const object = {
     "gcs": "",
     "gcd": "",
   }
-  // get gcs and gcd unique values from payloads array.
-  // array contains url parameters
-  // we just need to save gcs and gcd values
-  // in the object
   for (let payload of payloads) {
     const params = payload.split('&')
     for (let param of params) {
       const [key, value] = param.split('=')
       if (key === 'gcs') {
-        object.gcs = value
+        object.gcs = `${value} - ${gcsExplain[value]}`
       }
+      // if (key === 'gcd') {
+      //   let types = [
+      //     'ad_storage',
+      //     'analytics_storage',
+      //     'ad_user_data',
+      //     'ad_personalization'
+      //   ]
+
+      //   // Remove numbers from the string
+      //   const cleanString = value.replace(/\d+/g, '');
+      //   const values = cleanString.split('');
+      //   let explain = '';
+      //   explain += 'value:' + value + ' ';
+      //   for (let i = 0; i < values.length; i++) {
+      //     explain += `${types[i]}: ${gcdExplain[values[i]]} `
+      //   }
+      //   object.gcd = explain
+      // }
       if (key === 'gcd') {
-        object.gcd = value
+        let types = [
+          'ad_storage',
+          'analytics_storage',
+          'ad_user_data',
+          'ad_personalization'
+        ];
+      
+        // Remove numbers from the string
+        const cleanString = value.replace(/\d+/g, '');
+        const values = cleanString.split('');
+        let gcdObject = {}; // New object to store the explanation for each type
+
+        gcdObject.value = value;
+      
+        for (let i = 0; i < values.length; i++) {
+          gcdObject[types[i]] = gcdExplain[values[i]];
+        }
+      
+        object.gcd = gcdObject;
       }
+      
     }
   }
   // console.log('gcs gcd object: ', object);
