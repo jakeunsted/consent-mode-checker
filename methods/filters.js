@@ -66,6 +66,12 @@ function findConsentProvider (source) {
   return matches
 }
 
+/**
+ * Filters payloads and extracts relevant information.
+ * 
+ * @param {string[]} payloads - An array of payloads to be filtered.
+ * @returns {Object} - An object containing the filtered information.
+ */
 function filterPayloads (payloads) {
   const gcsExplain = {
     "G100": "No consent has been granted.",
@@ -96,24 +102,6 @@ function filterPayloads (payloads) {
       if (key === 'gcs') {
         object.gcs = `${value} - ${gcsExplain[value]}`
       }
-      // if (key === 'gcd') {
-      //   let types = [
-      //     'ad_storage',
-      //     'analytics_storage',
-      //     'ad_user_data',
-      //     'ad_personalization'
-      //   ]
-
-      //   // Remove numbers from the string
-      //   const cleanString = value.replace(/\d+/g, '');
-      //   const values = cleanString.split('');
-      //   let explain = '';
-      //   explain += 'value:' + value + ' ';
-      //   for (let i = 0; i < values.length; i++) {
-      //     explain += `${types[i]}: ${gcdExplain[values[i]]} `
-      //   }
-      //   object.gcd = explain
-      // }
       if (key === 'gcd') {
         let types = [
           'ad_storage',
@@ -125,7 +113,7 @@ function filterPayloads (payloads) {
         // Remove numbers from the string
         const cleanString = value.replace(/\d+/g, '');
         const values = cleanString.split('');
-        let gcdObject = {}; // New object to store the explanation for each type
+        let gcdObject = {};
 
         gcdObject.value = value;
       
@@ -138,7 +126,7 @@ function filterPayloads (payloads) {
       
     }
   }
-  // console.log('gcs gcd object: ', object);
+
   return object
 }
 
