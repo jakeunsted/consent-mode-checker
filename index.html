@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>URL Form</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  .container {
+    max-width: 600px;
+    width: 100%;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+  .form-group {
+    margin-bottom: 20px;
+  }
+  .form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  .form-group input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
+  .form-group input[type="submit"] {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .form-group input[type="submit"]:hover {
+    background-color: #0056b3;
+  }
+  .loading-spinner {
+    display: none;
+    margin-bottom: 20px;
+  }
+  .loading-spinner img {
+    width: 50px;
+    height: 50px;
+  }
+  .response-box {
+    margin-bottom: 20px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+    overflow-x: auto;
+    white-space: pre-wrap; /* Preserve line breaks */
+    font-size: 14px;
+    text-align: left;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>Enter URLs</h2>
+  <form id="urlForm" action="#">
+    <div class="form-group">
+      <label for="urls">URLs (comma-separated):</label>
+      <input type="text" id="urls" name="urls" placeholder="Enter comma-separated URLs" required>
+    </div>
+    <div class="form-group">
+      <input type="submit" value="Submit">
+    </div>
+  </form>
+  <div class="loading-spinner">
+    <img src="https://cdn.dribbble.com/users/46284/screenshots/453787/loading.gif" alt="Loading...">
+  </div>
+  <div class="response"></div>
+</div>
+
+<script>
+  // Get the form element
+  const form = document.getElementById('urlForm');
+
+  // Add event listener for form submission
+  form.addEventListener('submit', async function(event) {
+    event.preventDefault(); // Prevent default form submission behavior
+
+    // Clear existing response boxes
+    const responseContainer = document.querySelector('.response');
+    responseContainer.innerHTML = '';
+
+    // Show loading spinner
+    const loadingSpinner = document.querySelector('.loading-spinner');
+    loadingSpinner.style.display = 'block';
+
+    // Get the value of the URLs input field
+    const urlsInput = document.getElementById('urls');
+    const urlsValue = urlsInput.value.trim();
+
+    // Split the comma-separated URLs into an array
+    const urlsArray = urlsValue.split(',');
+
+    // Trim each URL and remove any empty strings
+    const cleanedUrlsArray = urlsArray.map(url => url.trim()).filter(Boolean);
+
+    // Loop through each URL and fetch data
+    for (const url of cleanedUrlsArray) {
+      // Make a POST request to the localhost server for each URL
+      try {
+        const response = await fetch('http://localhost:3001/findConsent', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify([url])
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch data for ' + url);
+        }
+
+        const data = await response.json();
+
+        // Create a box for each URL's data
+        const box = document.createElement('div');
+        box.classList.add('response-box');
+        box.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+
+        // Append the box to the response container
+        responseContainer.appendChild(box);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    }
+
+    // Hide loading spinner
+    loadingSpinner.style.display = 'none';
+
+    // Clear the input field
+    urlsInput.value = '';
+  });
+</script>
+</body>
+</html>
