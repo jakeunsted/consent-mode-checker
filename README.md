@@ -9,7 +9,8 @@ A puppeteer script and server to scalp websites for their consent mode setup. Th
 
 ## How to run/use
 `npm run start` \
-This starts an express server on post 3001. Make a POST request to localhost:3001/findConsent with an example body like: \
+This starts an express server on post 3001. Make a POST request to localhost:3001/findConsent with an example body like: 
+
 ```
 [
   'https://example.com',
