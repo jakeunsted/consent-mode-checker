@@ -43,23 +43,3 @@ app.post('/findConsent', async (req, res) => {
   const scalpedValues = await handleUrls(urls)
   res.send(scalpedValues)
 })
-
-// Local test version
-// (async () => {
-//   try {
-//     await handleUrls([
-//       'https://www.coventry.ac.uk/',
-//       // 'https://www.york.ac.uk/',
-//       // 'http://essex.ac.uk/',
-//       // 'https://www.uwtsd.ac.uk/',
-//       // 'https://tedi-london.ac.uk/',
-//       // 'https://www.qub.ac.uk/',
-//       // 'https://www.gre.ac.uk/',
-//     ])
-//   } catch (error) {
-//     console.error(error)
-//   } 
-//   finally {
-//     process.exit()
-//   }
-// })()
