@@ -28,7 +28,7 @@ const handleUrls = async (urls) => {
  */
 exports.handler = async (event) => {
   try {
-    const urls = JSON.parse(event.body);
+    const { urls } = JSON.parse(event.body); // Destructure the urls property directly
     const scalpedValues = await handleUrls(urls);
     return {
       statusCode: 200,
