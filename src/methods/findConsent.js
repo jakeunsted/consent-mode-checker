@@ -22,6 +22,8 @@ async function findConsent(url){
   const source = scalped.html
   const payloads = scalped.payloads
 
+  console.log('payloads: ', payloads);
+
   if (!source) {
     console.log('Error scraping URL')
     throw new Error('Error scraping URL')
