@@ -1,4 +1,4 @@
-const findConsent = require('./methods/findConsent')
+const findConsent = require('./src/methods/findConsent')
 const express = require('express')
 const cors = require('cors')
 

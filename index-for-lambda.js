@@ -1,4 +1,4 @@
-const findConsent = require('./methods/findConsent');
+const findConsent = require('./src/methods/findConsent');
 
 /**
  * Handles an array of URLs.
