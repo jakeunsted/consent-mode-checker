@@ -18,10 +18,14 @@ const scalper = async (url) => {
   // Listen for network requests
   page.on('request', async (request) => {
     console.log('Request URL:', request.url());
-    if (request.url().startsWith('https://region1.google-analytics.com/g/collect')) {
+    if (
+      request.url().startsWith('https://region1.google-analytics.com/g/collect') ||
+      request.url().startsWith('https://google-analytics.com/g/collect'))
+    {
       const postData = await request.url().split('?')[1];
       payloads.push(postData);
     }
+    
   });
 
   // Handle cookie consent dialog
@@ -31,8 +35,8 @@ const scalper = async (url) => {
   });
 
   await page.goto(url, {
-    waitUntil: 'networkidle0',
-    timeout: 20000
+    waitUntil: 'networkidle2',
+    timeout: 15000
   }).catch((error) => {
     return null
   })
