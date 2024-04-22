@@ -7,10 +7,10 @@ FROM public.ecr.aws/lambda/nodejs:18
 COPY package*.json ./
 
 # Copy methods folder
-COPY methods ./src/methods
+COPY src/methods ./src/methods
 
 # Copy configs folder
-COPY configs ./src/configs
+COPY src/configs ./src/configs
 
 # Copy the Lambda function code
 COPY index.js ./
