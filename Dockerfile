@@ -7,10 +7,13 @@ FROM public.ecr.aws/lambda/nodejs:18
 COPY package*.json ./
 
 # Copy methods folder
-COPY methods ./methods
+COPY methods ./src/methods
+
+# Copy configs folder
+COPY configs ./src/configs
 
 # Copy the Lambda function code
-COPY index-for-lambda.js ./
+COPY index.js ./
 
 # Install dependencies
 RUN npm install
@@ -19,5 +22,5 @@ RUN npm install
 ENV RUN_IN_DOCKER=true
 
 # Copy the Lambda function code
-CMD [ "index-for-lambda.handler" ]
+CMD [ "index.handler" ]
 
