@@ -72,10 +72,10 @@ const scalper = async (url) => {
   // })
 
   // write the page source to a file
-  fs.writeFileSync('page.html', html)
+  // fs.writeFileSync('page.html', html)
 
   // save payloads array to file
-  fs.writeFileSync('payloads.json', JSON.stringify(payloads, null, 2));
+  // fs.writeFileSync('payloads.json', JSON.stringify(payloads, null, 2));
 
   await browser.close().catch((error) => {
     console.error('Error closing browser: ', error)
