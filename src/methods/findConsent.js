@@ -29,7 +29,7 @@ async function findConsent(url){
 
   const matches = findConsentGtag(source)
   if (matches) {
-    // console.log('Gtag matches: ', matches)
+    console.log('Gtag matches: ', matches)
     values.gtag = matches
   } else {
     console.log('No GTag found')
@@ -37,7 +37,7 @@ async function findConsent(url){
 
   const consentMatches = findConsentProvider(source)
   if (consentMatches) {
-    // console.log('Consent providers: ', consentMatches)
+    console.log('Consent providers: ', consentMatches)
     values.consentMatches = consentMatches
   } else {
     console.log('No consent provider found')
@@ -45,13 +45,13 @@ async function findConsent(url){
 
   const payloadValues = filterPayloads(payloads)
   if (payloadValues) {
-    // console.log('Payload values: ', payloadValues)
+    console.log('Payload values: ', payloadValues)
     values.payloadValues = payloadValues
   } else {
     console.log('No payload values found')
   }
 
-  console.log('Values: ', values);
+  console.log('Final Values: ', values);
   return values
 }
 
