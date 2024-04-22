@@ -1,45 +1,63 @@
-const findConsent = require('./src/methods/findConsent')
-const express = require('express')
-const cors = require('cors')
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const findConsent = require('./src/methods/findConsent');
 
-/**
- * Handles an array of URLs.
- * 
- * @param {string[]} urls - The array of URLs to process.
- * @returns {Promise<void>} - A promise that resolves when all URLs have been processed.
- */
-const handleUrls = async (urls) => {
-  console.log('Processing ', urls.length, ' URL(s)')
-  const values = []
-  for (const url of urls) {
-    try {
-      values.push(await findConsent(url))
-    } catch (error) {
-      console.error(error)
-      return ['error processing URL(s)']
-    }
-  }
-  return values
-}
-
-const app = express()
-
-app.use(cors())
+const app = express();
+app.use(cors());
 app.use(express.json());
 
-const port = 3001
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`)
-})
+const handleUrls = async (urls) => {
+  console.log('Processing', urls.length, 'URL(s)');
+  const values = [];
+  for (const url of urls) {
+    try {
+      const result = await findConsent(url);
+      values.push(result);
+    } catch (error) {
+      console.error(error);
+      return ['Error processing URL(s)'];
+    }
+  }
+  return values;
+};
 
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
-
+// Common route handler
 app.post('/findConsent', async (req, res) => {
-  // body will have an array of urls
-  console.log('Request body: ', req.body);
-  const urls = req.body
-  const scalpedValues = await handleUrls(urls)
-  res.send(scalpedValues)
-})
+  try {
+    console.log('Request body:', req.body);
+    const {urls} = req.body;
+    const scalpedValues = await handleUrls(urls);
+    res.send(scalpedValues);
+  } catch (error) {
+    console.error('Error processing request:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+// Conditional logic for AWS Lambda
+if (process.env.RUN_IN_DOCKER === 'false') {
+  // Run in Docker
+  const port = 3000;
+  app.listen(port, () => {
+    console.log(`Express server listening at http://localhost:${port}`);
+  });
+} else {
+  // Export for AWS Lambda
+  exports.handler = async (event) => {
+    try {
+      const { urls } = JSON.parse(event.body);
+      const scalpedValues = await handleUrls(urls);
+      return {
+        statusCode: 200,
+        body: JSON.stringify(scalpedValues)
+      };
+    } catch (error) {
+      console.error('Error processing request:', error);
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ message: 'Internal Server Error' })
+      };
+    }
+  };
+}
