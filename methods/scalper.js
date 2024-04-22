@@ -2,7 +2,7 @@ const chromium = require('@sparticuz/chromium')
 const puppeteerCore = require('puppeteer-core')
 const puppeteer = require('puppeteer-extra')
 const StealthPlugin = require('puppeteer-extra-plugin-stealth')
-const { executablePath } = require('puppeteer') // Local
+// const { executablePath } = require('puppeteer') // Local
 const fs = require('fs')
 
 puppeteer.use(StealthPlugin())
@@ -18,8 +18,8 @@ const scalper = async (url) => {
   const browser = await puppeteer.launch({
     args: chromium.args,
     defaultViewport: chromium.defaultViewport,
-    executablePath: executablePath(), // Local
-    // executablePath: await chromium.executablePath(), // Aws
+    // executablePath: executablePath(), // Local
+    executablePath: await chromium.executablePath(), // Aws
     headless: true
   }).catch((error) => {
     console.error('Error launching browser: ', error)
