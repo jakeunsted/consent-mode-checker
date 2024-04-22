@@ -20,7 +20,7 @@ const scalper = async (url) => {
     console.log('Request URL:', request.url());
     if (
       request.url().startsWith('https://region1.google-analytics.com/g/collect') ||
-      request.url().startsWith('https://google-analytics.com/g/collect'))
+      request.url().startsWith('https://www.google-analytics.com/g/collect'))
     {
       const postData = await request.url().split('?')[1];
       payloads.push(postData);
