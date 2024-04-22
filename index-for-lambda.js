@@ -27,13 +27,6 @@ const handleUrls = async (urls) => {
  * @returns 
  */
 exports.handler = async (event) => {
-  if (event.httpMethod !== 'POST') {
-    return {
-      statusCode: 405,
-      body: 'Method Not Allowed'
-    };
-  }
-
   try {
     const urls = JSON.parse(event.body);
     const scalpedValues = await handleUrls(urls);
