@@ -15,6 +15,9 @@ COPY index-for-lambda.js ./
 # Install dependencies
 RUN npm install
 
+# Environment variables
+ENV RUN_IN_DOCKER=true
+
 # Copy the Lambda function code
 CMD [ "index-for-lambda.handler" ]
 

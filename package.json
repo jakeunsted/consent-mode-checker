@@ -12,6 +12,7 @@
   "dependencies": {
     "@sparticuz/chromium": "^123.0.1",
     "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "puppeteer": "^22.6.5",
     "puppeteer-core": "^22.6.5",
@@ -20,6 +21,6 @@
   },
   "engines": {
     "npm": "9.8.1",
-    "node": "18.18.2"
+    "node": ">=18.18.2"
   }
 }
