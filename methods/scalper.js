@@ -20,7 +20,7 @@ const scalper = async (url) => {
     defaultViewport: chromium.defaultViewport,
     // executablePath: executablePath(), // Local
     executablePath: await chromium.executablePath(), // Aws
-    headless: true
+    headless: chromium.headless,
   }).catch((error) => {
     console.error('Error launching browser: ', error)
     return null
