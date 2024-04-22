@@ -14,7 +14,6 @@ async function launchBrowser() {
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
       executablePath: await chromium.executablePath(),
-      headless: chromium.headless,
     };
   } else {
     // Local browser instance
