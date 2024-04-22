@@ -9,9 +9,12 @@ COPY package*.json ./
 # Copy methods folder
 COPY methods ./methods
 
+# Copy the Lambda function code
+COPY index-for-lambda.js ./
+
 # Install dependencies
 RUN npm install
 
 # Copy the Lambda function code
-CMD [ "index-for-aws.handler" ]
+CMD [ "index-for-lambda.handler" ]
 
