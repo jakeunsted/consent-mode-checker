@@ -17,6 +17,7 @@ const scalper = async (url) => {
   let payloads = []
   // Listen for network requests
   page.on('request', async (request) => {
+    console.log('Request URL:', request.url());
     if (request.url().startsWith('https://region1.google-analytics.com/g/collect')) {
       const postData = await request.url().split('?')[1];
       payloads.push(postData);
@@ -54,6 +55,8 @@ const scalper = async (url) => {
   await browser.close().catch((error) => {
     console.error('Error closing browser: ', error)
   })
+
+  console.log('scalper payloads: ', payloads);
 
   return { html, payloads }
 }
