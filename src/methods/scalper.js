@@ -31,8 +31,8 @@ const scalper = async (url) => {
   });
 
   await page.goto(url, {
-    waitUntil: 'networkidle2',
-    timeout: 10000
+    waitUntil: 'networkidle0',
+    timeout: 20000
   }).catch((error) => {
     return null
   })
