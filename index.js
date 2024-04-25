@@ -25,9 +25,11 @@ const handleUrls = async (urls) => {
 // Common route handler
 app.post('/findConsent', async (req, res) => {
   try {
+    console.time('Processing URLs')
     console.log('Request body:', req.body);
     const {urls} = req.body;
     const scalpedValues = await handleUrls(urls);
+    console.timeEnd('Processing URLs')
     res.send(scalpedValues);
   } catch (error) {
     console.error('Error processing request:', error);

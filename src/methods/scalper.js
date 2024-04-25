@@ -174,4 +174,119 @@ const scalperConsentAccepted = async (url) => {
   }
 }
 
-module.exports = {scalper, scalperConsentAccepted}
+const scalperConsentRejected = async (url) => {
+  console.log('rejecting cookies and scraping URL: ', url);
+
+  /**
+   * Launch browser and new page
+   */
+  const browser = await launchBrowser()
+  const page = await browser.newPage()
+
+  /**
+   * Flag to check if analytics requests are recorded
+   */
+  let analyticsRequestsCompleted = false;
+
+  /**
+   * Go to the URL and wait for the page to load
+   */
+  await page.goto(url, {
+    waitUntil: 'networkidle0',
+    timeout: 10000
+  }).catch((error) => {
+    return null
+  })
+
+  /**
+   * Need to try accept cookies and rerun.
+   * This will collect a different set of requests and gtag values.
+   */
+  await page.evaluate(() => {
+    const elements = Array.from(document.querySelectorAll('button, a, input[type="button"], input[type="submit"]'));
+    if (!elements.length) return 'No elements found';
+  
+    const foundElement = elements.find(element => {
+      const text = element.innerText.toLowerCase();
+      if (text.includes('Reject') || text.includes('reject cookies')) {
+        console.log('Consent element found: ', element);
+        element.click();
+        return true; // Element found and clicked, return true
+      }
+      return false;
+    });
+  
+    return foundElement ? 'Consent element clicked' : 'No consent element found';
+  }).then(result => {
+    // console.log('page.evaluate result:', result);
+  });
+
+  /**
+   * setup listener for network requests.
+   * collect payloads for google analytics
+   */
+  let payloads = []
+  page.on('request', async (request) => {
+    if (
+      request.url().startsWith('https://region1.google-analytics.com/g/collect') ||
+      request.url().startsWith('https://www.google-analytics.com/g/collect') ||
+      request.url().startsWith('https://region1.analytics.google.com/g/collect'))
+    {
+      const postData = await request.url().split('?')[1];
+      payloads.push(postData);
+      analyticsRequestsCompleted = true;
+    }
+  });
+
+  /**
+   * refresh to page to capture new requests
+   */
+  await Promise.all([
+    page.reload({
+      waitUntil: 'networkidle2',
+      timeout: 30000
+    }).catch((error) => {
+      return null
+    }),
+    new Promise((resolve) => {
+      if (analyticsRequestsCompleted) {
+        resolve();
+      } else {
+        setTimeout(() => {
+          console.warn('Analytics requests timed out');
+          resolve();
+        }, 10000);
+      }
+    }),
+  ]);
+
+  /**
+   * get the html content of the page
+   */
+  const html = await page.content().catch((error) => {
+    console.error('Error getting page HTML: ', error)
+    return null
+  })
+
+  /**
+   * check if the analytics requests completed.
+   * if so, close the browser and return the html and payloads.
+   * if not, log a warning and close the browser.
+   */
+  if (analyticsRequestsCompleted) {
+    await browser.close().catch((error) => {
+      console.error('Error closing browser: ', error);
+      return null;
+    });
+    return { html, payloads }
+  } else {
+    // Analytics requests did not complete, log a warning and close the browser
+    console.warn('Analytics requests did not complete within the timeout period for URL: ', url);
+    await browser.close().catch((error) => {
+      console.error('Error closing browser: ', error);
+      return null
+    });
+  }
+}
+
+module.exports = {scalper, scalperConsentAccepted, scalperConsentRejected}
