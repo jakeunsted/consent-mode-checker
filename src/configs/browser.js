@@ -21,7 +21,7 @@ async function launchBrowser() {
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
       executablePath: executablePath(),
-      headless: true,
+      headless: false,
     };
   }
 

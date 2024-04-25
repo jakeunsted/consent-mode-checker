@@ -31,7 +31,7 @@ function findConsentGtag (source) {
       gtagValues.push(consentObject)
     }
   } else {
-    return null
+    return 'No GTag found'
   }
 
   return gtagValues

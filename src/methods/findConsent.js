@@ -1,5 +1,5 @@
 const validUrl = require('./validUrl')
-const scalper = require('./scalper')
+const {scalper, scalperConsentAccepted} = require('./scalper')
 const {findConsentGtag, findConsentProvider, filterPayloads} = require('./filters')
 
 /**
@@ -22,7 +22,9 @@ async function findConsent(url){
   const source = scalped.html
   const payloads = scalped.payloads
 
-  console.log('payloads: ', payloads);
+  const consentedScalped = await scalperConsentAccepted(url)
+  const consentedSource = consentedScalped.html
+  const consentedPayloads = consentedScalped.payloads
 
   if (!source) {
     console.log('Error scraping URL')
@@ -31,7 +33,6 @@ async function findConsent(url){
 
   const matches = findConsentGtag(source)
   if (matches) {
-    console.log('Gtag matches: ', matches)
     values.gtag = matches
   } else {
     console.log('No GTag found')
@@ -39,7 +40,6 @@ async function findConsent(url){
 
   const consentMatches = findConsentProvider(source)
   if (consentMatches) {
-    console.log('Consent providers: ', consentMatches)
     values.consentMatches = consentMatches
   } else {
     console.log('No consent provider found')
@@ -47,10 +47,19 @@ async function findConsent(url){
 
   const payloadValues = filterPayloads(payloads)
   if (payloadValues) {
-    console.log('Payload values: ', payloadValues)
     values.payloadValues = payloadValues
   } else {
     console.log('No payload values found')
+  }
+
+  if (consentedScalped) {
+    const consentedPayloadValues = filterPayloads(consentedPayloads)
+    if (consentedPayloadValues) {
+      console.log('Consented Payload Values: ', consentedPayloadValues);
+      values.consentedPayloadValues = consentedPayloadValues
+    } else {
+      console.log('No consented payload values found')
+    }
   }
 
   console.log('Final Values: ', values);
