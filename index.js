@@ -7,12 +7,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const handleUrls = async (urls) => {
+const handleUrls = async (urls, method) => {
   console.log('Processing', urls.length, 'URL(s)');
   const values = [];
   for (const url of urls) {
     try {
-      const result = await findConsent(url);
+      const result = await findConsent(url, method);
       values.push(result);
     } catch (error) {
       console.error(error);
@@ -22,13 +22,24 @@ const handleUrls = async (urls) => {
   return values;
 };
 
+/**
+ * Methods
+ * 0 - scalper
+ * 1 - scalperConsentAccepted
+ * 2 - scalperConsentRejected
+ */
+
 // Common route handler
 app.post('/findConsent', async (req, res) => {
   try {
     console.time('Processing URLs')
+
     console.log('Request body:', req.body);
     const {urls} = req.body;
-    const scalpedValues = await handleUrls(urls);
+    const {method} = req.body;
+
+    const scalpedValues = await handleUrls(urls, method);
+
     console.timeEnd('Processing URLs')
     res.send(scalpedValues);
   } catch (error) {
@@ -49,7 +60,8 @@ if (process.env.RUN_IN_DOCKER === 'false') {
   exports.handler = async (event) => {
     try {
       const { urls } = JSON.parse(event.body);
-      const scalpedValues = await handleUrls(urls);
+      const { method } = JSON.parse(event.method);
+      const scalpedValues = await handleUrls(urls, method);
       return {
         statusCode: 200,
         body: JSON.stringify(scalpedValues)

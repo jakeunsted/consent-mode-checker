@@ -8,7 +8,7 @@ const {findConsentGtag, findConsentProvider, filterPayloads} = require('./filter
  * @param {string} url - The URL to scrape for consent information.
  * @throws {Error} If the URL is invalid or if there is an error scraping the URL.
  */
-async function findConsent(url){
+async function findConsent(url, method = 0){
   const values = {}
 
   if (!validUrl(url)) {
@@ -17,18 +17,40 @@ async function findConsent(url){
   }
 
   values.url = url
+
+  let scalped
+  let source
+  let payloads
   
-  const scalped = await scalper(url)
-  const source = scalped.html
-  const payloads = scalped.payloads
-
-  const consentedScalped = await scalperConsentAccepted(url)
-  const consentedSource = consentedScalped.html
-  const consentedPayloads = consentedScalped.payloads
-
-  const rejectedScaled = await scalperConsentRejected(url)
-  const rejectedSource = rejectedScaled.html
-  const rejectedPayloads = rejectedScaled.payloads
+  /**
+   * Methods
+   * 0 - scalper
+   * 1 - scalperConsentAccepted
+   * 2 - scalperConsentRejected
+   */
+  switch (method) {
+    case 0:
+      values.method = 'No Cookies Interaction Check'
+      scalped = await scalper(url)
+      source = scalped.html
+      payloads = scalped.payloads
+      break;
+    case 1:
+      values.method = 'Accepting Cookies Check'
+      scalped = await scalperConsentAccepted(url)
+      source = scalped.html
+      payloads = scalped.payloads
+      break;
+    case 2:
+      values.method = 'Rejecting Cookies Check'
+      scalped = await scalperConsentRejected(url)
+      source = scalped.html
+      payloads = scalped.payloads
+      break;
+    default:
+      console.log('Invalid method');
+      throw new Error('Invalid method');
+  }
 
   if (!source) {
     console.log('Error scraping URL')
@@ -54,26 +76,6 @@ async function findConsent(url){
     values.payloadValues = payloadValues
   } else {
     console.log('No payload values found')
-  }
-
-  if (consentedScalped) {
-    const consentedPayloadValues = filterPayloads(consentedPayloads)
-    if (consentedPayloadValues) {
-      console.log('Consented Payload Values: ', consentedPayloadValues);
-      values.consentedPayloadValues = consentedPayloadValues
-    } else {
-      console.log('No consented payload values found')
-    }
-  }
-
-  if (rejectedScaled) {
-    const rejectedPayloadValues = filterPayloads(rejectedPayloads)
-    if (rejectedPayloadValues) {
-      console.log('Rejected Payload Values: ', rejectedPayloadValues);
-      values.rejectedPayloadValues = rejectedPayloadValues
-    } else {
-      console.log('No rejected payload values found')
-    }
   }
 
   console.log('Final Values: ', values);
