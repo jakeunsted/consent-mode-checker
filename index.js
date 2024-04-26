@@ -60,7 +60,7 @@ if (process.env.RUN_IN_DOCKER === 'false') {
   exports.handler = async (event) => {
     try {
       const { urls } = JSON.parse(event.body);
-      const { method } = JSON.parse(event.method);
+      const { method } = JSON.parse(event.body);
       const scalpedValues = await handleUrls(urls, method);
       return {
         statusCode: 200,
