@@ -65,10 +65,9 @@ if (process.env.RUN_IN_DOCKER === 'false') {
       return {
         statusCode: 200,
         headers: {
-          "Access-Control-Allow-Origin": "*", // Allow requests from any origin
-          "Access-Control-Allow-Methods": "*", // Allow GET, POST, and OPTIONS requests
-          "Access-Control-Allow-Headers": "*", // Allow Content-Type header
-          "Content-Type": "application/json"
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "POST, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type",
         },
         body: JSON.stringify(scalpedValues)
       };
