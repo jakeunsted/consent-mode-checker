@@ -46,7 +46,7 @@ app.post('/findConsent', async (req, res) => {
     console.error('Error processing request:', error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
-});
+}); 
 
 // Conditional logic for AWS Lambda
 if (process.env.RUN_IN_DOCKER === 'false') {
@@ -64,6 +64,12 @@ if (process.env.RUN_IN_DOCKER === 'false') {
       const scalpedValues = await handleUrls(urls, method);
       return {
         statusCode: 200,
+        headers: {
+          "Access-Control-Allow-Origin": "*", // Allow requests from any origin
+          "Access-Control-Allow-Methods": "GET, POST, OPTIONS", // Allow GET, POST, and OPTIONS requests
+          "Access-Control-Allow-Headers": "Content-Type", // Allow Content-Type header
+          "Content-Type": "application/json"
+        },
         body: JSON.stringify(scalpedValues)
       };
     } catch (error) {
