@@ -130,7 +130,7 @@ const consentInteractingScalper = async (url, acceptCookies) => {
   await Promise.all([
     page.reload({
       waitUntil: 'networkidle2',
-      timeout: 30000
+      timeout: 50000
     }).catch((error) => {
       return null;
     }),
@@ -141,7 +141,7 @@ const consentInteractingScalper = async (url, acceptCookies) => {
         setTimeout(() => {
           console.warn('Analytics requests timed out');
           resolve();
-        }, 30000);
+        }, 50000);
       }
     }),
   ]);
