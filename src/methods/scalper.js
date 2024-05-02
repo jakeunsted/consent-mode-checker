@@ -141,7 +141,7 @@ const consentInteractingScalper = async (url, acceptCookies) => {
         setTimeout(() => {
           console.warn('Analytics requests timed out');
           resolve();
-        }, 10000);
+        }, 30000);
       }
     }),
   ]);
