@@ -122,6 +122,9 @@ const consentInteractingScalper = async (url, acceptCookies) => {
       payloads.push(postData);
       analyticsRequestsCompleted = true;
     }
+    if (acceptCookies && request.url().includes('google')) {
+      console.log('google request: ', request.url());
+    }
   });
 
   /**
@@ -130,7 +133,7 @@ const consentInteractingScalper = async (url, acceptCookies) => {
   await Promise.all([
     page.reload({
       waitUntil: 'networkidle2',
-      timeout: 50000
+      timeout: 30000
     }).catch((error) => {
       return null;
     }),
