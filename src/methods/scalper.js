@@ -1,7 +1,8 @@
 require('dotenv').config()
 const fs = require('fs')
 const launchBrowser = require('../configs/browser')
-const constants = require('../constants.json')
+const path = require('path');
+const constants = require(path.join(__dirname, '..', 'constants.json'));
 
 /**
  * Scrapes a webpage for HTML content and collects Google Analytics payloads.
