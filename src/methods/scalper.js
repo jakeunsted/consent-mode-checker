@@ -1,6 +1,7 @@
 require('dotenv').config()
 const fs = require('fs')
 const launchBrowser = require('../configs/browser')
+const constants = require('../constants.json')
 
 /**
  * Scrapes a webpage for HTML content and collects Google Analytics payloads.
@@ -19,9 +20,8 @@ const scalper = async (url) => {
   page.on('request', async (request) => {
     // console.log('Request URL:', request.url());
     if (
-      request.url().startsWith('https://region1.google-analytics.com/g/collect') ||
-      request.url().startsWith('https://www.google-analytics.com/g/collect'))
-    {
+      constants.analyticsURLs.some(url => request.url().startsWith(url))
+    ){
       const postData = await request.url().split('?')[1];
       payloads.push(postData);
     }
@@ -47,6 +47,7 @@ const scalper = async (url) => {
 
   await browser.close()
 
+  // If not running in docker, write the page source to a file
   if (process.env.RUN_IN_DOCKER !== 'true') {
     // write the page source to a file
     fs.writeFileSync('page.html', html)
@@ -66,11 +67,6 @@ const consentInteractingScalper = async (url, acceptCookies) => {
    */
   const browser = await launchBrowser();
   const page = await browser.newPage();
-
-  /**
-   * Flag to check if analytics requests are recorded
-   */
-  let analyticsRequestsCompleted = false;
 
   /**
    * Go to the URL and wait for the page to load
@@ -110,24 +106,19 @@ const consentInteractingScalper = async (url, acceptCookies) => {
    * setup listener for network requests.
    * collect payloads for google analytics
    */
-  let payloads = [];
-  page.on('request', async (request) => {
+  const payloads = [];
+  let analyticsRequestsCompleted = false;
+
+  const handleRequest = async (request) => {
     if (
-      request.url().startsWith('https://region1.google-analytics.com/g/collect') ||
-      request.url().startsWith('https://www.google-analytics.com/g/collect') ||
-      request.url().startsWith('https://region1.analytics.google.com/g/collect') ||
-      request.url().startsWith('https://analytics.google.com/g/collect'))
-    {
-      console.log('pushing payload');
+      constants.analyticsURLs.some(url => request.url().startsWith(url))
+    ) {
       const postData = await request.url().split('?')[1];
       payloads.push(postData);
       analyticsRequestsCompleted = true;
     }
-    // if (acceptCookies && request.url().includes('google')) {
-    //   console.log('google request: ', request.url());
-    // }
-  });
-
+  };
+  
   /**
    * refresh to page to capture new requests
    */
@@ -139,15 +130,11 @@ const consentInteractingScalper = async (url, acceptCookies) => {
       return null;
     }),
     new Promise((resolve) => {
-      if (analyticsRequestsCompleted) {
-        resolve();
-      } else {
-        setTimeout(() => {
-          console.warn('Analytics requests timed out');
-          resolve();
-        }, 50000);
-      }
-    }),
+      page.on('request', async (request) => {
+        await handleRequest(request);
+        resolve(); // Resolve the promise after handling the request
+      });
+    })
   ]);
 
   /**
@@ -157,6 +144,14 @@ const consentInteractingScalper = async (url, acceptCookies) => {
     console.error('Error getting page HTML: ', error);
     return null;
   });
+
+  if (process.env.RUN_IN_DOCKER !== 'true') {
+    // write the page source to a file
+    fs.writeFileSync('page.html', html)
+  
+    // save payloads array to file
+    fs.writeFileSync('payloads.json', JSON.stringify(payloads, null, 2));
+  }
 
   /**
    * check if the analytics requests completed.
@@ -179,10 +174,21 @@ const consentInteractingScalper = async (url, acceptCookies) => {
   }
 };
 
+/**
+ * Accepts the consent for the given URL using the consentInteractingScalper function.
+ * @param {string} url - The URL for which the consent is accepted.
+ * @returns {Promise} - A promise that resolves when the consent is accepted.
+ */
 const scalperConsentAccepted = async (url) => {
   return await consentInteractingScalper(url, true);
 };
 
+/**
+ * Handles the case when consent is rejected for the scalper.
+ *
+ * @param {string} url - The URL to interact with for consent rejection.
+ * @returns {Promise} - A promise that resolves when the consent rejection is handled.
+ */
 const scalperConsentRejected = async (url) => {
   return await consentInteractingScalper(url, false);
 };

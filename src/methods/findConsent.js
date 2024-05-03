@@ -3,14 +3,19 @@ const {scalper, scalperConsentAccepted, scalperConsentRejected} = require('./sca
 const {findConsentGtag, findConsentProvider, filterPayloads} = require('./filters')
 
 /**
- * Finds consent information from a given URL.
- * 
+ * Finds consent information for a given URL using different methods.
  * @param {string} url - The URL to scrape for consent information.
- * @throws {Error} If the URL is invalid or if there is an error scraping the URL.
+ * @param {number} [method=0] - The method to use for scraping consent information.
+ *                              0 - scalper
+ *                              1 - scalperConsentAccepted
+ *                              2 - scalperConsentRejected
+ * @returns {Promise<Object>} - An object containing the scraped consent information.
+ * @throws {Error} - If the URL is invalid or the method is invalid.
  */
 async function findConsent(url, method = 0){
   const values = {}
 
+  // Check if the URL is valid
   if (!validUrl(url)) {
     console.log('Invalid URL')
     throw new Error('Invalid URL')

@@ -1,0 +1,8 @@
+{
+  "analyticsURLs": [
+    "https://region1.google-analytics.com/g/collect",
+    "https://www.google-analytics.com/g/collect",
+    "https://region1.analytics.google.com/g/collect",
+    "https://analytics.google.com/g/collect"
+  ]
+}
