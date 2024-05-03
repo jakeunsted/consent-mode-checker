@@ -15,8 +15,8 @@ This starts an express server on post 3001. Make a POST request to localhost:300
 {
   "urls: [
     'https://example.com',
-    'https://anotherexample.co.uk'
-  ]
+  ],
+  "method": 0
 }
 ```
 
@@ -29,6 +29,7 @@ Body:
 {
   "urls: [
     'https://example.com',
-  ]
+  ],
+  "method": 0
 }
 ```
