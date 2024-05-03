@@ -1,7 +1,7 @@
 // wait for the page to finish loading script
 document.addEventListener('DOMContentLoaded', function() {
   // const fetchUrl = 'https://14g1e1sr2f.execute-api.us-east-1.amazonaws.com/consent/consent'
-  const fetchUrl = 'http://localhost:3000/findConsent'
+  // const fetchUrl = 'http://localhost:3000/findConsent'
   // Direct invocation of the function
   // const fetchUrl = 'https://w42bhjb7zvmspannm5jjoeg2ja0rwypp.lambda-url.us-east-1.on.aws/'
 
@@ -50,37 +50,42 @@ document.addEventListener('DOMContentLoaded', function() {
    * POST request to fetch consent data
    */
   const fetchConsentData = async (url) => {
-    const methods = [1];
-    const responseData = [];
+    const methods = [0, 1, 2];
   
-    for (const method of methods) {
-      try {
-        const response = await fetch(fetchUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            urls: [url],
-            method: method
-          }),
-        });
+    try {
+      // Create an array of promises
+      const promises = methods.map(method => fetch(fetchUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          urls: [url],
+          method: method
+        }),
+      }));
   
-        // Check for successful response status code
+      // Use Promise.all to wait for all fetches to complete in parallel
+      const responses = await Promise.all(promises);
+  
+      const responseData = responses.map(async (response) => {
         if (!response.ok) {
           throw new Error(`Error fetching data: ${response.statusText}`);
         }
+        return await response.json();
+      });
   
-        const data = await response.json();
-        responseData.push(data);
-      } catch (error) {
-        handleError(error, 'Error fetching consent data')
-        return null;
-      }
+      // Wait for all responses to be processed
+      return await Promise.all(responseData);
+    } catch (error) {
+      handleError(error, 'Error fetching consent data');
+      return null;
     }
-    return responseData;
   };
 
+  /**
+   * Removes existing div elements with specific class names.
+   */
   const removeExistingDivs = () => {
     const responseBoxes = document.getElementsByClassName('response-box');
     while(responseBoxes[0]) {
@@ -117,6 +122,13 @@ document.addEventListener('DOMContentLoaded', function() {
   const loadingDiv = createElementWithClass('loading-spinner', 'div');
   headDiv.appendChild(loadingDiv);
 
+  /**
+   * Displays consent values for a given URL.
+   *
+   * @param {Array} consentValues - An array of consent values.
+   * @param {string} url - The URL for which the consent values are displayed.
+   * @returns {void}
+   */
   const showConsentValues = (consentValues, url) => {
 
     // Create a new div for the consent box
@@ -190,9 +202,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  // Search Button Div event listener
+  // Add event listener to search button
   searchButtonDiv.addEventListener('click', async () => {
       if (!searchingFlag) {
+        // Remove existing divs (responses)
         removeExistingDivs();
         searchButtonDiv.disabled = true
         searchingFlag = true
