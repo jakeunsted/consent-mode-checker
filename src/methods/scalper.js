@@ -115,13 +115,17 @@ const consentInteractingScalper = async (url, acceptCookies) => {
     if (
       request.url().startsWith('https://region1.google-analytics.com/g/collect') ||
       request.url().startsWith('https://www.google-analytics.com/g/collect') ||
-      request.url().startsWith('https://region1.analytics.google.com/g/collect'))
+      request.url().startsWith('https://region1.analytics.google.com/g/collect') ||
+      request.url().startsWith('https://analytics.google.com/g/collect'))
     {
       console.log('pushing payload');
       const postData = await request.url().split('?')[1];
       payloads.push(postData);
       analyticsRequestsCompleted = true;
     }
+    // if (acceptCookies && request.url().includes('google')) {
+    //   console.log('google request: ', request.url());
+    // }
   });
 
   /**
@@ -141,7 +145,7 @@ const consentInteractingScalper = async (url, acceptCookies) => {
         setTimeout(() => {
           console.warn('Analytics requests timed out');
           resolve();
-        }, 10000);
+        }, 50000);
       }
     }),
   ]);
