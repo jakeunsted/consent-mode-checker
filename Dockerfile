@@ -12,6 +12,9 @@ COPY src/methods ./src/methods
 # Copy configs folder
 COPY src/configs ./src/configs
 
+# Copy constants file
+COPY src/constants.json ./src/constants.json
+
 # Copy the Lambda function code
 COPY index.js ./
 
