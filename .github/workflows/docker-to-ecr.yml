@@ -17,7 +17,7 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
+        aws-region: eu-west-1
     
     - name: Login to ECR
       id: login-ecr
@@ -37,4 +37,4 @@ jobs:
       run: |
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        aws lambda update-function-code --region us-east-1 --function-name arn:aws:lambda:us-east-1:157472674223:function:consent-mode-check --image-uri $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        aws lambda update-function-code --region eu-west-1 --function-name arn:aws:lambda:eu-west-1:654654220960:function:consent-mode-check --image-uri $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
