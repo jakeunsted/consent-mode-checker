@@ -37,22 +37,22 @@ async function findConsent(url, method = 0){
     case 0:
       values.method = 'No Cookies Interaction Check'
       scalped = await scalper(url)
-      source = scalped.html
-      payloads = scalped.payloads
+      source = scalped.html ? scalped.html : '';
+      payloads = scalped.payloads ? scalped.payloads : [];
       break;
     case 1:
       values.method = 'Accepting Cookies Check'
       scalped = await scalperConsentAccepted(url)
-      source = scalped.html
-      payloads = scalped.payloads
+      source = scalped && scalped.html ? scalped.html : null;
+      payloads = scalped && scalped.payloads ? scalped.payloads : [];
       break;
     case 2:
       values.method = 'Rejecting Cookies Check'
       scalped = await scalperConsentRejected(url)
-      source = scalped.html
-      payloads = scalped.payloads
+      source = scalped.html ? scalped.html : '';
+      payloads = scalped.payloads ? scalped.payloads : [];
       break;
-    default:
+    default:ß
       console.log('Invalid method');
       throw new Error('Invalid method');
   }

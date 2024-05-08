@@ -5,7 +5,6 @@ function findConsentGtag (source) {
   let gtagValues = []
 
   // GTag regex pattern
-  // let pattern = /gtag\("consent", "(?:default|update)",\s*{([\s\S]*?)\}\s*\);/g;
   let pattern = /gtag\(["']consent["'], ["'](default|update)["'],\s*{([\s\S]*?)\}\s*\);/g;
   let matches = source.match(pattern)
 
@@ -16,7 +15,6 @@ function findConsentGtag (source) {
       let objectMatch = match.match(objectPattern)[0]
 
       // remove trailing comma on last property in object
-      // objectMatch = objectMatch.replace(/,(?=[^,]*$)/, '')
       objectMatch = objectMatch.replace(/,(?=\s*})/, '');
 
       // Add double quotes around keys
@@ -24,8 +22,6 @@ function findConsentGtag (source) {
 
       // Replace single quotes with double quotes
       jsonString = jsonString.replace(/'/g, '"');
-
-      // console.log('JSON String: ', jsonString);
 
       consentObject = JSON.parse(jsonString)
       gtagValues.push(consentObject)

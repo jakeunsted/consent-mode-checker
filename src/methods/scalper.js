@@ -60,6 +60,12 @@ const scalper = async (url) => {
   return { html, payloads }
 }
 
+/**
+ * Function to interact with a webpage to accept or reject cookies.
+ * @param {string} url 
+ * @param {boolean} acceptCookies - True or False, whether to accept or reject cookies on the page.
+ * @returns {Promise<{ html: string, payloads: string[] }>} - A promise that resolves to an object containing the scraped HTML content and an array of Google Analytics payloads.
+ */
 const consentInteractingScalper = async (url, acceptCookies) => {
   console.log((acceptCookies ? 'accepting' : 'rejecting') + ' cookies and scraping URL: ', url);
 
@@ -85,7 +91,7 @@ const consentInteractingScalper = async (url, acceptCookies) => {
    */
   await page.evaluate((acceptCookies) => {
     const elements = Array.from(document.querySelectorAll('button, a, input[type="button"], input[type="submit"]'));
-    if (!elements.length) return 'No elements found';
+    if (!elements.length) return false;
 
     const keyword = acceptCookies ? 'accept' : 'reject';
     const foundElement = elements.find(element => {
@@ -110,6 +116,12 @@ const consentInteractingScalper = async (url, acceptCookies) => {
   const payloads = [];
   let analyticsRequestsCompleted = false;
 
+  /**
+   * Handles the incoming request and performs necessary actions.
+   *
+   * @param {Request} request - The incoming request object.
+   * @returns {Promise<void>} - A promise that resolves once the request is handled.
+   */
   const handleRequest = async (request) => {
     if (
       constants.analyticsURLs.some(url => request.url().startsWith(url))
@@ -179,6 +191,7 @@ const consentInteractingScalper = async (url, acceptCookies) => {
  * Accepts the consent for the given URL using the consentInteractingScalper function.
  * @param {string} url - The URL for which the consent is accepted.
  * @returns {Promise} - A promise that resolves when the consent is accepted.
+ * Contains the HTML content and Google Analytics payloads.
  */
 const scalperConsentAccepted = async (url) => {
   return await consentInteractingScalper(url, true);
@@ -189,6 +202,7 @@ const scalperConsentAccepted = async (url) => {
  *
  * @param {string} url - The URL to interact with for consent rejection.
  * @returns {Promise} - A promise that resolves when the consent rejection is handled.
+ * Contains the HTML content and Google Analytics payloads.
  */
 const scalperConsentRejected = async (url) => {
   return await consentInteractingScalper(url, false);
