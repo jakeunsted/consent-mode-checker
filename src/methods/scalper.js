@@ -4,13 +4,17 @@ const launchBrowser = require('../configs/browser')
 const path = require('path');
 const constants = require(path.join(__dirname, '..', 'constants.json'));
 
+require('dotenv').config()
+const debug = process.env.DEBUG
+console.log('DEBUG:', debug);
+
 /**
  * Scrapes a webpage for HTML content and collects Google Analytics payloads.
  * @param {string} url - The URL of the webpage to scrape.
  * @returns {Promise<{ html: string, payloads: string[] }>} - A promise that resolves to an object containing the scraped HTML content and an array of Google Analytics payloads.
  */
 const scalper = async (url) => {
-  console.log('Scraping URL: ', url);
+  if (debug) console.log('Scraping URL: ', url);
 
   const browser = await launchBrowser()
   
@@ -19,7 +23,7 @@ const scalper = async (url) => {
   let payloads = []
   // Listen for network requests
   page.on('request', async (request) => {
-    // console.log('Request URL:', request.url());
+    // if (debug) console.log('Request URL:', request.url());
     if (
       constants.analyticsURLs.some(url => request.url().startsWith(url))
     ){
@@ -30,7 +34,7 @@ const scalper = async (url) => {
 
   // Handle cookie consent dialog
   page.on('dialog', async dialog => {
-    console.log('Dialog message:', dialog.message());
+    if (debug) console.log('Dialog message:', dialog.message());
     await dialog.accept();
   });
 
@@ -67,7 +71,7 @@ const scalper = async (url) => {
  * @returns {Promise<{ html: string, payloads: string[] }>} - A promise that resolves to an object containing the scraped HTML content and an array of Google Analytics payloads.
  */
 const consentInteractingScalper = async (url, acceptCookies) => {
-  console.log((acceptCookies ? 'accepting' : 'rejecting') + ' cookies and scraping URL: ', url);
+  if (debug) console.log((acceptCookies ? 'accepting' : 'rejecting') + ' cookies and scraping URL: ', url);
 
   /**
    * Launch browser and new page
@@ -82,6 +86,7 @@ const consentInteractingScalper = async (url, acceptCookies) => {
     waitUntil: 'networkidle0',
     timeout: 10000
   }).catch((error) => {
+    console.error('Error navigating to page: ', error);
     return null;
   });
 
@@ -106,7 +111,7 @@ const consentInteractingScalper = async (url, acceptCookies) => {
 
     return foundElement ? 'Consent element clicked' : 'No consent element found';
   }, acceptCookies).then(result => {
-    // console.log('page.evaluate result:', result);
+    if (debug) console.log('page.evaluate result:', result);
   });
 
   /**
@@ -131,24 +136,6 @@ const consentInteractingScalper = async (url, acceptCookies) => {
       analyticsRequestsCompleted = true;
     }
   };
-  
-  /**
-   * refresh to page to capture new requests
-   */
-  await Promise.all([
-    page.reload({
-      waitUntil: 'networkidle2',
-      timeout: 30000
-    }).catch((error) => {
-      return null;
-    }),
-    new Promise((resolve) => {
-      page.on('request', async (request) => {
-        await handleRequest(request);
-        resolve(); // Resolve the promise after handling the request
-      });
-    })
-  ]);
 
   /**
    * get the html content of the page
@@ -157,6 +144,28 @@ const consentInteractingScalper = async (url, acceptCookies) => {
     console.error('Error getting page HTML: ', error);
     return null;
   });
+  
+  /**
+   * refresh to page to capture new requests
+   */
+  await Promise.all([
+    page.reload({ waitUntil: 'networkidle2', timeout: 30000 }),
+    new Promise((resolve) => setTimeout(resolve, 5000))
+  ]);
+
+  // Create a promise to track relevant requests
+  let analyticsRequestsCompletedPromise = new Promise((resolve) => {
+    page.on('request', async (request) => {
+      await handleRequest(request);
+
+      // Conditionally resolve the promise if it's an analytics request
+      if (constants.analyticsURLs.some(url => request.url().startsWith(url))) {
+        resolve(); 
+      }
+    });
+  });
+  // Wait for analytics requests to complete
+  await analyticsRequestsCompletedPromise; 
 
   if (process.env.RUN_IN_DOCKER !== 'true') {
     // write the page source to a file
@@ -184,6 +193,7 @@ const consentInteractingScalper = async (url, acceptCookies) => {
       console.error('Error closing browser: ', error);
       return null;
     });
+    return { html, payloads };
   }
 };
 

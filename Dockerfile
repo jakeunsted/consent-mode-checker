@@ -23,6 +23,7 @@ RUN npm install
 
 # Environment variables
 ENV RUN_IN_DOCKER=true
+ENV DEBUG=false
 
 # Copy the Lambda function code
 CMD [ "index.handler" ]
