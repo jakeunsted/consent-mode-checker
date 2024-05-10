@@ -83,7 +83,7 @@ const consentInteractingScalper = async (url, acceptCookies) => {
    * Go to the URL and wait for the page to load
    */
   await page.goto(url, {
-    waitUntil: 'networkidle0',
+    waitUntil: 'networkidle2',
     timeout: 10000
   }).catch((error) => {
     console.error('Error navigating to page: ', error);
@@ -144,18 +144,11 @@ const consentInteractingScalper = async (url, acceptCookies) => {
     console.error('Error getting page HTML: ', error);
     return null;
   });
-  
-  /**
-   * refresh to page to capture new requests
-   */
-  await Promise.all([
-    page.reload({ waitUntil: 'networkidle2', timeout: 30000 }),
-    new Promise((resolve) => setTimeout(resolve, 5000))
-  ]);
 
-  // Create a promise to track relevant requests
-  let analyticsRequestsCompletedPromise = new Promise((resolve) => {
+  // Create a promise to track relevant requests with a timeout
+  let analyticsRequestsCompletedPromise = new Promise((resolve, reject) => {
     page.on('request', async (request) => {
+      console.log('Request URL:', request.url());
       await handleRequest(request);
 
       // Conditionally resolve the promise if it's an analytics request
@@ -163,9 +156,21 @@ const consentInteractingScalper = async (url, acceptCookies) => {
         resolve(); 
       }
     });
+
+    // Timeout if analytics requests don't complete within a specified time
+    setTimeout(() => {
+        reject(new Error('Timeout waiting for analytics requests'));
+    }, 10000); // Adjust timeout as needed (10 seconds in this example) 
   });
-  // Wait for analytics requests to complete
-  await analyticsRequestsCompletedPromise; 
+
+  await page.reload({ waitUntil: 'networkidle0', timeout: 30000 });
+
+  // Wait for analytics requests to complete (with handling for timeout)
+  try {
+    await analyticsRequestsCompletedPromise; 
+  } catch (error) {
+    console.error('Error waiting for analytics requests:', error);
+  }
 
   if (process.env.RUN_IN_DOCKER !== 'true') {
     // write the page source to a file
