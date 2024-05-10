@@ -1,7 +1,7 @@
 // wait for the page to finish loading script
 document.addEventListener('DOMContentLoaded', function() {
   // const fetchUrl = 'https://14g1e1sr2f.execute-api.us-east-1.amazonaws.com/consent/consent'
-  // const fetchUrl = 'http://localhost:3000/findConsent'
+  const fetchUrl = 'http://localhost:3000/findConsent'
   // Direct invocation of the function
   // const fetchUrl = 'https://w42bhjb7zvmspannm5jjoeg2ja0rwypp.lambda-url.us-east-1.on.aws/'
 
@@ -204,7 +204,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Add event listener to search button
   searchButtonDiv.addEventListener('click', async () => {
-      if (!searchingFlag) {
+    if (!searchingFlag) {
         // Remove existing divs (responses)
         removeExistingDivs();
         searchButtonDiv.disabled = true
@@ -214,24 +214,29 @@ document.addEventListener('DOMContentLoaded', function() {
         loadingDiv.style.display = 'block';
 
         // Get values from text input
-        let url = textInput.value
-        if (url) {
-          let consentValues = null;
+        let urls = textInput.value.split(',').map(url => url.trim()); // Split URLs by comma and trim each URL
 
-          consentValues = await fetchConsentData(url)
+        for (let url of urls) {
+            if (url) {
+                let consentValues = null;
 
-          if (consentValues) {
-            console.log('consentValues', consentValues);
-            showConsentValues(consentValues, url);
-          }
-        } else {
-          handleError('No URL provided', 'No URL provided');
+                consentValues = await fetchConsentData(url);
+
+                if (consentValues) {
+                    console.log('consentValues', consentValues);
+                    showConsentValues(consentValues, url);
+                }
+            } else {
+                handleError('No URL provided', 'No URL provided');
+            }
         }
-        searchingFlag = false
+
+        searchingFlag = false;
         // Hide loading spinner after search is completed
         loadingDiv.style.display = 'none';
-      } else {
+    } else {
         console.log('Already searching');
-      }
-  })
+    }
+  });
+
 });
