@@ -148,7 +148,6 @@ const consentInteractingScalper = async (url, acceptCookies) => {
   // Create a promise to track relevant requests with a timeout
   let analyticsRequestsCompletedPromise = new Promise((resolve, reject) => {
     page.on('request', async (request) => {
-      console.log('Request URL:', request.url());
       await handleRequest(request);
 
       // Conditionally resolve the promise if it's an analytics request
