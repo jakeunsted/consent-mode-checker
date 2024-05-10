@@ -159,10 +159,14 @@ const consentInteractingScalper = async (url, acceptCookies) => {
     // Timeout if analytics requests don't complete within a specified time
     setTimeout(() => {
         reject(new Error('Timeout waiting for analytics requests'));
-    }, 10000); // Adjust timeout as needed (10 seconds in this example) 
+    }, 10000);
   });
 
-  await page.reload({ waitUntil: 'networkidle0', timeout: 30000 });
+  try {
+    await page.reload({ waitUntil: 'networkidle0', timeout: 15000 });
+  } catch (error) {
+    console.error('Error reloading page:', error);
+  }
 
   // Wait for analytics requests to complete (with handling for timeout)
   try {
