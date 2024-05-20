@@ -126,4 +126,18 @@ function filterPayloads (payloads) {
   return object
 }
 
-module.exports = {findConsentGtag, findConsentProvider, filterPayloads}
+function findGoogleTagManager (source) {
+  let gtmValues = []
+
+  let pattern = /googletagmanager\.com\/gtm\.js\?id=([\w-]+)/g;
+  let matches = source.match(pattern)
+
+  // Use exec method to find all matches and capture groups
+  while ((match = pattern.exec(source)) !== null) {
+    gtmValues.push(match[1]);
+  }
+
+  return gtmValues.length ? gtmValues : null;
+}
+
+module.exports = {findConsentGtag, findConsentProvider, filterPayloads, findGoogleTagManager}

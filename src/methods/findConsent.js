@@ -1,6 +1,6 @@
 const validUrl = require('./validUrl')
 const {scalper, scalperConsentAccepted, scalperConsentRejected} = require('./scalper')
-const {findConsentGtag, findConsentProvider, filterPayloads} = require('./filters')
+const {findConsentGtag, findConsentProvider, filterPayloads, findGoogleTagManager} = require('./filters')
 
 /**
  * Finds consent information for a given URL using different methods.
@@ -81,6 +81,13 @@ async function findConsent(url, method = 0){
     values.payloadValues = payloadValues
   } else {
     console.log('No payload values found')
+  }
+
+  const gtmValues = findGoogleTagManager(source)
+  if (gtmValues) {
+    values.gtm = gtmValues
+  } else {
+    console.log('No Google Tag Manager found')
   }
 
   console.log('Final Values: ', values);
