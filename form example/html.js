@@ -140,6 +140,16 @@ document.addEventListener('DOMContentLoaded', function() {
     urlHeader.innerHTML = url;
     consentBoxDiv.appendChild(urlHeader);
 
+    // Add GTM ID below URL if it exists
+    if (consentValues[0][0].gtm) {
+      const gtmHeader = document.createElement('h2');
+      gtmHeader.innerHTML = 'GTM ID: ' + consentValues[0][0].gtm[0];
+      consentBoxDiv.appendChild(gtmHeader);
+    } else {
+      const gtmNotFound = document.createElement('h2');
+      gtmNotFound.innerHTML = 'GTM ID: Not Found';
+      consentBoxDiv.appendChild(gtmNotFound);
+    }
 
     for (const consentValueArray of consentValues) {
       try {
@@ -205,7 +215,6 @@ document.addEventListener('DOMContentLoaded', function() {
   // Add event listener to search button
   searchButtonDiv.addEventListener('click', async () => {
     if (!searchingFlag) {
-        // Remove existing divs (responses)
         removeExistingDivs();
         searchButtonDiv.disabled = true
         searchingFlag = true
@@ -214,21 +223,30 @@ document.addEventListener('DOMContentLoaded', function() {
         loadingDiv.style.display = 'block';
 
         // Get values from text input
-        let urls = textInput.value.split(',').map(url => url.trim()); // Split URLs by comma and trim each URL
+        let urls = textInput.value.split(',').map(url => url.trim());
 
-        for (let url of urls) {
-            if (url) {
-                let consentValues = null;
-
-                consentValues = await fetchConsentData(url);
-
-                if (consentValues) {
-                    console.log('consentValues', consentValues);
-                    showConsentValues(consentValues, url);
+        // Fetch consent data for each URL concurrently
+        try {
+            const consentResults = await Promise.all(urls.map(async (url) => {
+                if (url) {
+                    const consentValues = await fetchConsentData(url);
+                    return { url, consentValues }; // Return both URL and data
+                } else {
+                    return { url, error: 'No URL provided'};
                 }
-            } else {
-                handleError('No URL provided', 'No URL provided');
+            }));
+
+            // Process the results
+            for (const result of consentResults) {
+                if (result.consentValues) {
+                    showConsentValues(result.consentValues, result.url, result.gtm);
+                } else if (result.error) {
+                    handleError(result.error, result.url);
+                }
             }
+        } catch (error) {
+            console.error('Error fetching consent data:', error);
+            // Handle global errors here
         }
 
         searchingFlag = false;
@@ -238,5 +256,6 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Already searching');
     }
   });
+
 
 });
