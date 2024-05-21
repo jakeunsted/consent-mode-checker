@@ -94,24 +94,34 @@ const consentInteractingScalper = async (url, acceptCookies) => {
    * Need to try accept/reject cookies and rerun.
    * This will collect a different set of requests and gtag values.
    */
-  await page.evaluate((acceptCookies) => {
+  await page.evaluate((acceptCookies, constants) => {
     const elements = Array.from(document.querySelectorAll('button, a, input[type="button"], input[type="submit"]'));
     if (!elements.length) return false;
 
-    const keyword = acceptCookies ? 'accept' : 'reject';
+    const keywords = acceptCookies ? constants.acceptCookiesText : constants.rejectCookiesText;
     const foundElement = elements.find(element => {
       const text = element.innerText.toLowerCase();
-      if (text.includes(keyword) || text.includes(keyword + ' cookies')) {
-        console.log('Consent element found: ', element);
-        element.click();
-        return true; // Element found and clicked, return true
-      }
-      return false;
+      let found = false;
+      keywords.forEach(keyword => {
+        if (text.includes(keyword) || text.includes(keyword + ' cookies')) {
+          element.click();
+          found = true;
+          return;
+        }
+      });
+      return found;
     });
 
     return foundElement ? 'Consent element clicked' : 'No consent element found';
-  }, acceptCookies).then(result => {
+  }, acceptCookies, constants).then(result => {
     if (debug) console.log('page.evaluate result:', result);
+    // if result is "No consent element found", then we should return a message to the user
+    if (result === 'No consent element found') {
+      const error = new Error
+      error.statusCode = 500;
+      error.message = `No ${acceptCookies ? 'accept cookies' : 'reject cookies'} element found`;
+      throw error;
+    }
   });
 
   /**

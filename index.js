@@ -12,7 +12,12 @@ const handleUrls = async (urls, method) => {
       values.push(result);
     } catch (error) {
       console.error(error);
-      throw { message: 'Internal Server Error', statusCode: error.statusCode || 500 };
+      // throw { message: 'Internal Server Error', statusCode: error.statusCode || 500 };
+      values.push({
+        url: url,
+        method: method,
+        error: error.message || 'Internal Server Error'
+      })
     }
   }
   return values;

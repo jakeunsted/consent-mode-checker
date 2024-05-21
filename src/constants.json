@@ -4,5 +4,22 @@
     "https://www.google-analytics.com/g/collect",
     "https://region1.analytics.google.com/g/collect",
     "https://analytics.google.com/g/collect"
+  ],
+
+  "rejectCookiesText": [
+    "reject",
+    "decline",
+    "deny",
+    "do not accept",
+    "do not allow",
+    "reject all"
+  ],
+
+  "acceptCookiesText": [
+    "accept",
+    "allow all",
+    "agree",
+    "i accept",
+    "accept all"
   ]
 }
