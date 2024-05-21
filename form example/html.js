@@ -65,14 +65,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }),
       }));
   
-      // Use Promise.all to wait for all fetches to complete in parallel
-      const responses = await Promise.all(promises);
+      // Use Promise.allSettled to wait for all fetches to complete in parallel
+      const responses = await Promise.allSettled(promises);
   
       const responseData = responses.map(async (response) => {
-        if (!response.ok) {
-          throw new Error(`Error fetching data: ${response.statusText}`);
+        if (response.status === 'rejected') {
+          throw new Error(`Error fetching data: ${response.reason}`);
         }
-        return await response.json();
+        return await response.value.json();
       });
   
       // Wait for all responses to be processed
@@ -155,8 +155,16 @@ document.addEventListener('DOMContentLoaded', function() {
       try {
         const consentValue = consentValueArray[0]; // Accessing the object within the array
 
+        console.log('consentValue in loop', consentValue);
+
+        if (consentValue.error) {
+          const errorDiv = createElementWithClass('failed', 'h2');
+          errorDiv.innerHTML = consentValue.error;
+          consentBoxDiv.appendChild(errorDiv);
+        }
+
         if (!consentValue.method || !consentValue.consentMatches || !consentValue.payloadValues) {
-          showError('Error in fetching consent data');
+          showError(consentValue.error || 'Error in fetching consent data');
           continue; // move to next iteration
         }
 
@@ -215,45 +223,38 @@ document.addEventListener('DOMContentLoaded', function() {
   // Add event listener to search button
   searchButtonDiv.addEventListener('click', async () => {
     if (!searchingFlag) {
-        removeExistingDivs();
-        searchButtonDiv.disabled = true
-        searchingFlag = true
+      searchingFlag = true;
+      loadingDiv.style.display = 'block';
 
-        // Show loading spinner
-        loadingDiv.style.display = 'block';
+      let urls = textInput.value.split(',').map(url => url.trim());
 
-        // Get values from text input
-        let urls = textInput.value.split(',').map(url => url.trim());
-
-        // Fetch consent data for each URL concurrently
-        try {
-            const consentResults = await Promise.all(urls.map(async (url) => {
-                if (url) {
-                    const consentValues = await fetchConsentData(url);
-                    return { url, consentValues }; // Return both URL and data
-                } else {
-                    return { url, error: 'No URL provided'};
-                }
-            }));
-
-            // Process the results
-            for (const result of consentResults) {
-                if (result.consentValues) {
-                    showConsentValues(result.consentValues, result.url, result.gtm);
-                } else if (result.error) {
-                    handleError(result.error, result.url);
-                }
-            }
-        } catch (error) {
-            console.error('Error fetching consent data:', error);
-            // Handle global errors here
+      // Fetch consent data for each URL concurrently
+      const consentResults = await Promise.allSettled(urls.map(async (url) => {
+        if (url) {
+          const consentValues = await fetchConsentData(url);
+          return { url, consentValues };
+        } else {
+          return { url, error: 'No URL provided'};
         }
+      }));
 
-        searchingFlag = false;
-        // Hide loading spinner after search is completed
-        loadingDiv.style.display = 'none';
+      // Process the results
+      for (const result of consentResults) {
+        if (result.status === 'fulfilled') {
+          if (result.value.consentValues) {
+            showConsentValues(result.value.consentValues, result.value.url, result.value.gtm);
+          } else if (result.value.error) {
+            handleError(result.value.error, result.value.url);
+          }
+        } else {
+          console.error('Error fetching consent data:', result.reason);
+        }
+      }
+
+      searchingFlag = false;
+      loadingDiv.style.display = 'none';
     } else {
-        console.log('Already searching');
+      console.log('Already searching');
     }
   });
 
